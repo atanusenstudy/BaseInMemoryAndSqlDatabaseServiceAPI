@@ -1,5 +1,6 @@
 ﻿using BasicService.Data;
 using BasicService.Models;
+using BasicService.Validation;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BasicService.Controllers
@@ -35,19 +36,31 @@ namespace BasicService.Controllers
 
         [HttpPost]
         //Return type of async method is either void or , Task<t>
-        public async Task<IActionResult> AddContact(Contact data) { 
-            DBContact contact = new DBContact()
-            {
-                Id = Guid.NewGuid(),
-                Name = data.Name,
-                Email = data.Email,
-                Phone = data.Phone,
-                Address = data.Address
-            };
+        public async Task<IActionResult> AddContact([FromBody] Contact data) {
+            var contactValidator = new ContactValidator();
 
-            await dbContxt.Contacts.AddAsync(contact);
-            await dbContxt.SaveChangesAsync();
-            return Ok(contact);
+            // Call Validate or ValidateAsync and pass the object which needs to be validated
+            var result = contactValidator.Validate(data);
+
+            if (result.IsValid)
+            {
+                DBContact contact = new DBContact()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = data.Name,
+                    Email = data.Email,
+                    Phone = data.Phone,
+                    Address = data.Address
+                };
+
+                await dbContxt.Contacts.AddAsync(contact);
+                await dbContxt.SaveChangesAsync();
+                return Ok(contact);
+            }
+
+            var errorMessages = result.Errors.Select(x => x.ErrorMessage).ToList();
+            return BadRequest(errorMessages);
+  
         }
        
         
@@ -87,22 +100,22 @@ namespace BasicService.Controllers
 
         }
         /*
-         [
-  {
-    "id": "74901648-8341-4784-ad5b-ad649ffc7ff4",
-    "name": "TestModied",
-    "email": "sasas@email.com",
-    "phone": 6666666,
-    "address": "sttest1ring"
-  },
-  {
-    "id": "0ef01d7e-42ba-4f23-8a1f-1dff394440be",
-    "name": "Test2",
-    "email": "sasas2222@email.com",
-    "phone": 66666662,
-    "address": "sttest1ring222"
-  }
-]
+        [
+              {
+                "id": "74901648-8341-4784-ad5b-ad649ffc7ff4",
+                "name": "TestModied",
+                "email": "sasas@email.com",
+                "phone": 6666666,
+                "address": "sttest1ring"
+              },
+              {
+                "id": "0ef01d7e-42ba-4f23-8a1f-1dff394440be",
+                "name": "Test2",
+                "email": "sasas2222@email.com",
+                "phone": 66666662,
+                "address": "sttest1ring222"
+              }
+        ]
         */
 
     }
