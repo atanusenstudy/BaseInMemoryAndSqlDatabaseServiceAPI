@@ -16,12 +16,15 @@ namespace BasicService.Controllers
             this.dbContxt = dbContext;
         }
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<DBContact>))]
         public IActionResult GetContacts()
         {
             return  Ok(dbContxt.Contacts.ToList());
         }
 
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DBContact))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [Route("{id:guid}")]
         public async Task<IActionResult> GetContact([FromRoute] Guid id)
         {
@@ -35,6 +38,8 @@ namespace BasicService.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Contact))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(FluentValidation.Results.ValidationResult))]
         //Return type of async method is either void or , Task<t>
         public async Task<IActionResult> AddContact([FromBody] Contact data) {
             var contactValidator = new ContactValidator();
@@ -65,6 +70,8 @@ namespace BasicService.Controllers
        
         
         [HttpPut]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Contact))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(FluentValidation.Results.ValidationResult))]
         [Route("{id:guid}")]
         public async Task<IActionResult> UpdateContact([FromRoute] Guid id, Contact data)
         {
@@ -85,6 +92,8 @@ namespace BasicService.Controllers
         }
       
         [HttpDelete]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Contact))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Route("{id:guid}")]
         public async Task<IActionResult> DeleteContact([FromRoute] Guid id)
         {
